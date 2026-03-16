@@ -667,12 +667,15 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                                 onTap: () {
                                   Navigator.pop(context);
                                 },
-                                child: const Text(
-                                  'Se connecter',
-                                  style: TextStyle(
-                                    color: Color(0xFF0066CC),
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
+                                child: GestureDetector(
+                                  onTap: () => navigation.replace("/public/login"),
+                                  child: const Text(
+                                    'Se connecter',
+                                    style: TextStyle(
+                                      color: Color(0xFF0066CC),
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                               ),

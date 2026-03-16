@@ -466,7 +466,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                               ),
                               GestureDetector(
                                 onTap: () {
-                                  // TODO: Naviguer vers la page d'inscription
+                                  navigation.replace('/public/register');
                                 },
                                 child: const Text(
                                   'Créer un compte',
@@ -494,8 +494,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               padding: const EdgeInsets.symmetric(vertical: 15),
               child: Column(
                 children: [
-                  
-
                   // Texte de sécurité gouvernementale
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
