@@ -1,3 +1,4 @@
+import 'package:app_mobile/pages/auth/login/loginPage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'pages/404/not_found_page.dart';
@@ -31,6 +32,14 @@ final routerConfigProvider = Provider<GoRouter>((ref) {
       name: 'intro_page',
       builder: (ctx, state) {
         return IntroPage();
+      },
+    ),
+
+    GoRoute(
+      path: "/public/login",
+      name: 'login_page',
+      builder: (ctx, state) {
+        return LoginPage();
       },
     ),
   ];
