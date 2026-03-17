@@ -1,5 +1,8 @@
 import 'package:app_mobile/pages/auth/login/loginPage.dart';
 import 'package:app_mobile/pages/auth/register/registerPage.dart';
+import 'package:app_mobile/pages/history/historyPage.dart';
+import 'package:app_mobile/pages/scanner/scannerPage.dart';
+import 'package:app_mobile/pages/settings/settingsPage.dart';
 import 'package:app_mobile/pages/widgets/mainLayout.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -54,6 +57,30 @@ final routerConfigProvider = Provider<GoRouter>((ref) {
       name: 'register_page',
       builder: (ctx, state) {
         return RegisterPage();
+      },
+    ),
+
+    GoRoute(
+      path: "/app/scanner",
+      name: 'scanner_page',
+      builder: (ctx, state) {
+        return ScannerPage();
+      },
+    ),
+
+    GoRoute(
+      path: "/app/settings",
+      name: 'settings_page',
+      builder: (ctx, state) {
+        return SettingsPage();
+      },
+    ),
+
+    GoRoute(
+      path: "/app/history",
+      name: 'history_page',
+      builder: (ctx, state) {
+        return HistoryPage();
       },
     ),
   ];
