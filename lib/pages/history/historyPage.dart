@@ -33,17 +33,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0.5,
-        leading: Container(
-          margin: const EdgeInsets.only(left: 8),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.grey.shade100,
-          ),
-          child: IconButton(
-            icon: const Icon(Icons.arrow_back, color: primaryDark, size: 20),
-            onPressed: () => Navigator.pop(context),
-          ),
-        ),
+        leading: null,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
