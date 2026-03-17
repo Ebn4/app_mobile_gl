@@ -2,6 +2,7 @@ import 'package:app_mobile/main.dart';
 import 'package:app_mobile/utils/navigationUtils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../profile/profileEditPage.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
@@ -15,23 +16,23 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   bool emailNotif = false;
   bool smsNotif = true;
   var navigation = getIt<NavigationUtils>();
-  
+
   // Contrôleur pour détecter le scroll
   final ScrollController _scrollController = ScrollController();
   bool _isScrolled = false;
-  
+
   // Couleurs principales
   static const Color primaryBlue = Color(0xFF2563EB);
   static const Color primaryDark = Color(0xFF1E293B);
   static const Color secondaryText = Color(0xFF64748B);
   static const Color backgroundColor = Color(0xFFF8FAFC);
-  
+
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
   }
-  
+
   void _onScroll() {
     if (_scrollController.offset > 10 && !_isScrolled) {
       setState(() => _isScrolled = true);
@@ -39,7 +40,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       setState(() => _isScrolled = false);
     }
   }
-  
+
   @override
   void dispose() {
     _scrollController.removeListener(_onScroll);
@@ -68,10 +69,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             ),
             Text(
               "Configuration de l'application",
-              style: TextStyle(
-                color: secondaryText,
-                fontSize: 12,
-              ),
+              style: TextStyle(color: secondaryText, fontSize: 12),
             ),
           ],
         ),
@@ -83,7 +81,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           children: [
             /// ================= PROFIL =================
             _buildProfileCard(),
-            
+
             const SizedBox(height: 20),
 
             /// ================= INFOS COMPTE =================
@@ -223,7 +221,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
             /// ================= VERSION =================
             _buildVersionInfo(),
-            
+
             const SizedBox(height: 20),
           ],
         ),
@@ -301,10 +299,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                           ),
                           child: const Text(
                             "Responsable Police",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 11,
-                            ),
+                            style: TextStyle(color: Colors.white, fontSize: 11),
                           ),
                         ),
                       ],
@@ -326,7 +321,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 ),
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ProfileEditPage(),
+                  ),
+                );
+              },
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -334,10 +336,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   SizedBox(width: 8),
                   Text(
                     "Modifier le profil",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                   ),
                 ],
               ),
@@ -418,13 +417,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                label,
-                style: TextStyle(
-                  color: secondaryText,
-                  fontSize: 12,
-                ),
-              ),
+              Text(label, style: TextStyle(color: secondaryText, fontSize: 12)),
               const SizedBox(height: 2),
               Text(
                 value,
@@ -473,10 +466,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               ),
               Text(
                 subtitle,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: secondaryText,
-                ),
+                style: TextStyle(fontSize: 12, color: secondaryText),
               ),
             ],
           ),
@@ -528,10 +518,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             if (showBadge)
               Container(
                 margin: const EdgeInsets.only(right: 8),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 2,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
                   color: Colors.green.shade50,
                   borderRadius: BorderRadius.circular(12),
@@ -546,11 +533,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   ),
                 ),
               ),
-            Icon(
-              Icons.arrow_forward_ios,
-              size: 14,
-              color: secondaryText,
-            ),
+            Icon(Icons.arrow_forward_ios, size: 14, color: secondaryText),
           ],
         ),
       ),
@@ -590,10 +573,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             const SizedBox(width: 10),
             const Text(
               "Se déconnecter",
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
           ],
         ),
@@ -639,10 +619,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         const SizedBox(height: 6),
         Text(
           "© 2026 République Démocratique du Congo",
-          style: TextStyle(
-            color: secondaryText.withOpacity(0.7),
-            fontSize: 12,
-          ),
+          style: TextStyle(color: secondaryText.withOpacity(0.7), fontSize: 12),
         ),
       ],
     );

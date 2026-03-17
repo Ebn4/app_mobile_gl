@@ -1,6 +1,7 @@
 import 'package:app_mobile/pages/auth/login/loginPage.dart';
 import 'package:app_mobile/pages/auth/register/registerPage.dart';
 import 'package:app_mobile/pages/history/historyPage.dart';
+import 'package:app_mobile/pages/profile/profileEditPage.dart';
 import 'package:app_mobile/pages/scanner/scannerPage.dart';
 import 'package:app_mobile/pages/settings/settingsPage.dart';
 import 'package:app_mobile/pages/widgets/mainLayout.dart';
@@ -81,6 +82,14 @@ final routerConfigProvider = Provider<GoRouter>((ref) {
       name: 'history_page',
       builder: (ctx, state) {
         return HistoryPage();
+      },
+    ),
+    
+    GoRoute(
+      path: "/app/profile/edit",
+      name: 'profile_edit_page',
+      builder: (ctx, state) {
+        return ProfileEditPage();
       },
     ),
   ];
