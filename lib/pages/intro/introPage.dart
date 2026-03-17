@@ -14,9 +14,8 @@ class IntroPage extends ConsumerStatefulWidget {
 
 class _IntroPageState extends ConsumerState<IntroPage> {
   var navigation = getIt<NavigationUtils>();
-  double _progressValue = 0.0;
-  Timer? _progressTimer;
   bool _isNavigating = false;
+  late Timer _navigationTimer;
 
   @override
   void initState() {
@@ -26,30 +25,11 @@ class _IntroPageState extends ConsumerState<IntroPage> {
       var ctrl = ref.read(appCtrlProvider.notifier);
       ctrl.getUser();
       
-      // Démarrer l'animation de progression
-      _startProgressAnimation();
-    });
-  }
-
-  void _startProgressAnimation() {
-    const totalDuration = Duration(seconds: 5);
-    const updateInterval = Duration(milliseconds: 30);
-    final steps = totalDuration.inMilliseconds / updateInterval.inMilliseconds;
-    final increment = 1.0 / steps;
-    
-    _progressTimer = Timer.periodic(updateInterval, (timer) {
-      setState(() {
-        if (_progressValue < 1.0) {
-          _progressValue += increment;
-          if (_progressValue >= 1.0) {
-            _progressValue = 1.0;
-            timer.cancel();
-            
-            if (!_isNavigating) {
-              _isNavigating = true;
-              navigation.replace('/app/home');
-            }
-          }
+      // Timer de sécurité pour forcer la navigation après 3.5 secondes max
+      _navigationTimer = Timer(const Duration(milliseconds: 3500), () {
+        if (!_isNavigating && mounted) {
+          _isNavigating = true;
+          navigation.replace('/app/home');
         }
       });
     });
@@ -57,7 +37,7 @@ class _IntroPageState extends ConsumerState<IntroPage> {
 
   @override
   void dispose() {
-    _progressTimer?.cancel();
+    _navigationTimer.cancel();
     super.dispose();
   }
 
@@ -68,7 +48,7 @@ class _IntroPageState extends ConsumerState<IntroPage> {
       body: SafeArea(
         child: Column(
           children: [
-            // Bandeau tricolore amélioré avec dégradé
+            // Bandeau tricolore
             Container(
               height: 8,
               child: Row(
@@ -113,7 +93,7 @@ class _IntroPageState extends ConsumerState<IntroPage> {
               ),
             ),
 
-            // En-tête gouvernemental stylisé
+            // En-tête gouvernemental
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
               child: Column(
@@ -159,11 +139,11 @@ class _IntroPageState extends ConsumerState<IntroPage> {
               ),
             ),
 
-            // Zone principale avec design amélioré
+            // Zone principale
             Expanded(
               child: Stack(
                 children: [
-                  // Cercles décoratifs en arrière-plan
+                  // Cercles décoratifs
                   Positioned(
                     top: -50,
                     left: -50,
@@ -189,12 +169,12 @@ class _IntroPageState extends ConsumerState<IntroPage> {
                     ),
                   ),
 
-                  // Contenu central avec icône encadrée
+                  // Contenu central
                   Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Cadre circulaire avec dégradé pour l'icône
+                        // Icône
                         Container(
                           width: 160,
                           height: 160,
@@ -212,7 +192,6 @@ class _IntroPageState extends ConsumerState<IntroPage> {
                           child: Center(
                             child: Stack(
                               children: [
-                                // Cercle principal avec dégradé
                                 Container(
                                   width: 130,
                                   height: 130,
@@ -243,7 +222,11 @@ class _IntroPageState extends ConsumerState<IntroPage> {
                                       height: 85,
                                       decoration: BoxDecoration(
                                         gradient: const RadialGradient(
-                                          colors: [Color(0xFF0066CC), Color(0xFF2E86DE), Color(0xFF4A9EFF)],
+                                          colors: [
+                                            Color(0xFF0066CC),
+                                            Color(0xFF2E86DE),
+                                            Color(0xFF4A9EFF),
+                                          ],
                                           stops: [0.3, 0.7, 1.0],
                                         ),
                                         shape: BoxShape.circle,
@@ -263,8 +246,6 @@ class _IntroPageState extends ConsumerState<IntroPage> {
                                     ),
                                   ),
                                 ),
-                                
-                                // Petit cercle décoratif (haut gauche)
                                 Positioned(
                                   top: 15,
                                   left: 25,
@@ -277,8 +258,6 @@ class _IntroPageState extends ConsumerState<IntroPage> {
                                     ),
                                   ),
                                 ),
-                                
-                                // Petit cercle décoratif (bas droite)
                                 Positioned(
                                   bottom: 20,
                                   right: 20,
@@ -298,7 +277,7 @@ class _IntroPageState extends ConsumerState<IntroPage> {
 
                         const SizedBox(height: 20),
 
-                        // Badge check en dessous de l'icône
+                        // Badge vérifié
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 16,
@@ -347,7 +326,7 @@ class _IntroPageState extends ConsumerState<IntroPage> {
 
                         const SizedBox(height: 25),
 
-                        // Titre avec effet de texte
+                        // Titre
                         ShaderMask(
                           shaderCallback: (bounds) => const LinearGradient(
                             colors: [Color(0xFF1E3C72), Color(0xFF0066CC)],
@@ -364,7 +343,7 @@ class _IntroPageState extends ConsumerState<IntroPage> {
 
                         const SizedBox(height: 8),
 
-                        // Badge NFC stylisé
+                        // Badge NFC
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 16,
@@ -408,7 +387,7 @@ class _IntroPageState extends ConsumerState<IntroPage> {
                     ),
                   ),
 
-                  // Empreinte digitale stylisée
+                  // Empreinte digitale
                   Positioned(
                     bottom: 60,
                     right: 20,
@@ -433,76 +412,17 @@ class _IntroPageState extends ConsumerState<IntroPage> {
               ),
             ),
 
-            // Section inférieure avec barre de progression moderne
+            // Section inférieure avec barre de progression
             Column(
               children: [
-                // Barre de progression personnalisée
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 40),
-                  child: Column(
-                    children: [
-                      Stack(
-                        children: [
-                          // Barre de fond
-                          Container(
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: Colors.grey[200],
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                          ),
-                          // Barre de progression animée
-                          AnimatedContainer(
-                            duration: const Duration(milliseconds: 30),
-                            height: 8,
-                            width: MediaQuery.of(context).size.width * 0.8 * _progressValue,
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFF0066CC), Color(0xFF2E86DE), Color(0xFF4A9EFF)],
-                                stops: [0.0, 0.5, 1.0],
-                              ),
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFF0066CC).withOpacity(0.4),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      // Texte de chargement
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Chargement...',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[600],
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          Text(
-                            '${(_progressValue * 100).toInt()}%',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: const Color(0xFF0066CC),
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                  child: _buildProgressBar(),
                 ),
 
                 const SizedBox(height: 20),
 
-                // Texte de sécurité avec icône
+                // Texte de sécurité
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -526,7 +446,7 @@ class _IntroPageState extends ConsumerState<IntroPage> {
 
                 const SizedBox(height: 15),
 
-                // Carrés de couleurs améliorés
+                // Carrés de couleurs
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -547,16 +467,89 @@ class _IntroPageState extends ConsumerState<IntroPage> {
     );
   }
 
+  /// ================= BARRE DE PROGRESSION CORRIGÉE =================
+  Widget _buildProgressBar() {
+    return TweenAnimationBuilder<double>(
+      duration: const Duration(seconds: 3),
+      tween: Tween(begin: 0.0, end: 1.0),
+      curve: Curves.linear,
+      builder: (context, value, child) {
+        // Navigation immédiate quand on arrive à 100%
+        if (value >= 0.99 && !_isNavigating && mounted) {
+          // Utiliser un microtask pour éviter les problèmes de setState pendant le build
+          Future.microtask(() {
+            if (!_isNavigating && mounted) {
+              _isNavigating = true;
+              navigation.replace('/app/home');
+            }
+          });
+        }
+        
+        return Column(
+          children: [
+            Stack(
+              children: [
+                Container(
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                Container(
+                  height: 8,
+                  width: MediaQuery.of(context).size.width * 0.8 * value,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF0066CC), Color(0xFF2E86DE), Color(0xFF4A9EFF)],
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF0066CC).withOpacity(0.4),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Chargement...',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Text(
+                  '${(value * 100).toInt()}%',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: const Color(0xFF0066CC),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget _buildColorSquare(int colorCode) {
     return Container(
       width: 18,
       height: 18,
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            Color(colorCode),
-            Color(colorCode).withOpacity(0.8),
-          ],
+          colors: [Color(colorCode), Color(colorCode).withOpacity(0.8)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
