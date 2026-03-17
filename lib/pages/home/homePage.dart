@@ -2,6 +2,7 @@ import 'package:app_mobile/main.dart';
 import 'package:app_mobile/utils/navigationUtils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../widgets/mainLayout.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -48,7 +49,11 @@ class _HomePageState extends ConsumerState<HomePage> {
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
-                  icon: const Icon(Icons.nfc_rounded, color: Colors.white, size: 22),
+                  icon: const Icon(
+                    Icons.nfc_rounded,
+                    color: Colors.white,
+                    size: 22,
+                  ),
                   onPressed: () {},
                   constraints: const BoxConstraints(
                     minWidth: 36,
@@ -85,7 +90,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               ),
             ],
           ),
-          
+
           // Contenu principal avec padding ajusté
           SliverPadding(
             padding: const EdgeInsets.all(16),
@@ -93,17 +98,17 @@ class _HomePageState extends ConsumerState<HomePage> {
               delegate: SliverChildListDelegate([
                 // Quick Actions en premier
                 _buildQuickActions(),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Section des statistiques - CORRIGÉE
                 _buildDetailedStats(),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Activités récentes
                 _buildRecentActivities(),
-                
+
                 const SizedBox(height: 20),
               ]),
             ),
@@ -208,13 +213,14 @@ class _HomePageState extends ConsumerState<HomePage> {
           ],
         ),
         const SizedBox(height: 16),
-        
+
         // Grille de statistiques avec contraintes de taille
         LayoutBuilder(
           builder: (context, constraints) {
             // Calculer la largeur disponible pour chaque carte
-            double cardWidth = (constraints.maxWidth - 12) / 2; // 12 = espacement
-            
+            double cardWidth =
+                (constraints.maxWidth - 12) / 2; // 12 = espacement
+
             return Wrap(
               spacing: 12,
               runSpacing: 12,
@@ -317,12 +323,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                 child: Icon(icon, color: Colors.white, size: 16),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 6,
-                  vertical: 2,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: change.startsWith('+') 
+                  color: change.startsWith('+')
                       ? successGreen.withOpacity(0.1)
                       : Colors.grey.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
@@ -397,34 +400,59 @@ class _HomePageState extends ConsumerState<HomePage> {
         // Utilisation de Row avec flex pour éviter les dépassements
         Row(
           children: [
-            Expanded(child: _buildQuickActionButton(
-              icon: Icons.qr_code_scanner,
-              label: 'Scanner',
-              color: primaryBlue,
-              onTap: () {},
-            )),
+            Expanded(
+              child: _buildQuickActionButton(
+                icon: Icons.qr_code_scanner,
+                label: 'Scanner',
+                color: primaryBlue,
+                onTap: () {
+                  // Naviguer vers l'onglet Scanner
+                  ref.read(bottomNavIndexProvider.notifier).state = 1;
+                },
+              ),
+            ),
             const SizedBox(width: 8),
-            Expanded(child: _buildQuickActionButton(
-              icon: Icons.history,
-              label: 'Historique',
-              color: purpleAccent,
-              onTap: () {},
-            )),
+            Expanded(
+              child: _buildQuickActionButton(
+                icon: Icons.history,
+                label: 'Historique',
+                color: purpleAccent,
+                onTap: () {
+                  // Naviguer vers l'onglet Historique
+                  ref.read(bottomNavIndexProvider.notifier).state = 2;
+                },
+              ),
+            ),
             const SizedBox(width: 8),
-            Expanded(child: _buildQuickActionButton(
-              icon: Icons.notifications,
-              label: 'Alertes',
-              color: warningOrange,
-              badge: '3',
-              onTap: () {},
-            )),
+            Expanded(
+              child: _buildQuickActionButton(
+                icon: Icons.notifications,
+                label: 'Alertes',
+                color: warningOrange,
+                badge: '3',
+                onTap: () {
+                  // TODO: Implémenter la page d'alertes ou naviguer vers notifications
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Page d\'alertes bientôt disponible!'),
+                      backgroundColor: warningOrange,
+                    ),
+                  );
+                },
+              ),
+            ),
             const SizedBox(width: 8),
-            Expanded(child: _buildQuickActionButton(
-              icon: Icons.settings,
-              label: 'Paramètres',
-              color: secondaryText,
-              onTap: () {},
-            )),
+            Expanded(
+              child: _buildQuickActionButton(
+                icon: Icons.settings,
+                label: 'Paramètres',
+                color: secondaryText,
+                onTap: () {
+                  // Naviguer vers l'onglet Paramètres
+                  ref.read(bottomNavIndexProvider.notifier).state = 3;
+                },
+              ),
+            ),
           ],
         ),
       ],
@@ -673,10 +701,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: secondaryText,
-                    ),
+                    style: TextStyle(fontSize: 11, color: secondaryText),
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
                   ),
@@ -684,13 +709,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               ),
             ),
             const SizedBox(width: 8),
-            Text(
-              time,
-              style: TextStyle(
-                fontSize: 10,
-                color: secondaryText,
-              ),
-            ),
+            Text(time, style: TextStyle(fontSize: 10, color: secondaryText)),
           ],
         ),
       ),
