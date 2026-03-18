@@ -1,5 +1,6 @@
 import 'package:app_mobile/pages/auth/login/loginPage.dart';
 import 'package:app_mobile/pages/auth/register/registerPage.dart';
+import 'package:app_mobile/pages/changePassword/changePasswordPage.dart';
 import 'package:app_mobile/pages/history/historyPage.dart';
 import 'package:app_mobile/pages/profile/profileEditPage.dart';
 import 'package:app_mobile/pages/scanner/scannerPage.dart';
@@ -90,6 +91,14 @@ final routerConfigProvider = Provider<GoRouter>((ref) {
       name: 'profile_edit_page',
       builder: (ctx, state) {
         return ProfileEditPage();
+      },
+    ),
+
+    GoRoute(
+      path: "/app/change-password",
+      name: 'change_password_page',
+      builder: (ctx, state) {
+        return ChangePasswordPage();
       },
     ),
   ];

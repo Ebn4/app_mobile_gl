@@ -3,6 +3,7 @@ import 'package:app_mobile/utils/navigationUtils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../profile/profileEditPage.dart';
+import '../changePassword/changePasswordPage.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
@@ -163,7 +164,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   _buildMenuItem(
                     icon: Icons.lock_outline,
                     title: "Changer le mot de passe",
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ChangePasswordPage(),
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 4),
                   _buildMenuItem(
