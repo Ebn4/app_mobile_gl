@@ -173,14 +173,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                       );
                     },
                   ),
-                  const SizedBox(height: 4),
-                  _buildMenuItem(
-                    icon: Icons.verified_user_outlined,
-                    title: "Authentification à deux facteurs",
-                    onTap: () {},
-                    showBadge: true,
-                    badgeText: "Recommandé",
-                  ),
                 ],
               ),
             ),
