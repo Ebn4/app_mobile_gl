@@ -1,16 +1,22 @@
 class Authentication {
-  String email;
+  String username;
   String password;
+  String role;
+  String  institution;
 
-  Authentication({required this.email, required this.password});
+  Authentication({required this.username, required this.password, required this.role, required this.institution});
 
-  factory Authentication.fromJson(Map<String,dynamic> json) => Authentication(
-    email: json['email'], 
-    password: json['password']
+  factory Authentication.fromJson(Map<String, dynamic> json) => Authentication(
+    username: json['username'],
+    password: json['password'],
+    role: json['role'],
+    institution: json['institution'],
   );
 
   Map<String, dynamic> toJson() => {
-    "email" : email,
-    "password" : password
+    "username": username,
+    "password": password,
+    "role": role,
+    "institution": institution,
   };
 }
