@@ -1,6 +1,7 @@
 import 'package:app_mobile/pages/auth/login/loginPage.dart';
 import 'package:app_mobile/pages/auth/register/registerPage.dart';
 import 'package:app_mobile/pages/changePassword/changePasswordPage.dart';
+import 'package:app_mobile/pages/citizen/citizenInfoPage.dart';
 import 'package:app_mobile/pages/history/historyPage.dart';
 import 'package:app_mobile/pages/profile/profileEditPage.dart';
 import 'package:app_mobile/pages/scanner/scannerPage.dart';
@@ -71,6 +72,21 @@ final routerConfigProvider = Provider<GoRouter>((ref) {
     ),
 
     GoRoute(
+      path: "/app/citizen-info",
+      name: 'citizen_info_page',
+      builder: (ctx, state) {
+        final arguments = state.extra as Map<String, dynamic>? ?? {};
+        final citizenData =
+            arguments['citizenData'] as Map<String, dynamic>? ?? {};
+        final agentDomain = arguments['domain'] as String? ?? 'default';
+        return CitizenInfoPage(
+          citizenData: citizenData,
+          agentDomain: agentDomain,
+        );
+      },
+    ),
+
+    GoRoute(
       path: "/app/settings",
       name: 'settings_page',
       builder: (ctx, state) {
@@ -85,7 +101,7 @@ final routerConfigProvider = Provider<GoRouter>((ref) {
         return HistoryPage();
       },
     ),
-    
+
     GoRoute(
       path: "/app/profile/edit",
       name: 'profile_edit_page',
