@@ -2,9 +2,14 @@ class Authentication {
   String username;
   String password;
   String role;
-  String  institution;
+  String institution;
 
-  Authentication({required this.username, required this.password, required this.role, required this.institution});
+  Authentication({
+    required this.username,
+    required this.password,
+    required this.role,
+    required this.institution,
+  });
 
   factory Authentication.fromJson(Map<String, dynamic> json) => Authentication(
     username: json['username'],
