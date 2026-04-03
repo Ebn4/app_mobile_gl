@@ -1,6 +1,7 @@
 import 'package:app_mobile/business/models/user/user.dart';
 import 'package:app_mobile/main.dart';
 import 'package:app_mobile/pages/intro/appCtrl.dart';
+import 'package:app_mobile/pages/settings/settingsCtrl.dart';
 import 'package:app_mobile/utils/navigationUtils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,13 +28,11 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-     // Récupération de l'utilisateur depuis appCtrlProvider
+    // Récupération de l'utilisateur depuis appCtrlProvider
     final user = ref.watch(appCtrlProvider.select((state) => state.user));
     // Si l'utilisateur n'est pas chargé, on affiche un loader
     if (user == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -127,12 +126,6 @@ class _HomePageState extends ConsumerState<HomePage> {
             ),
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _testCitizenInfoPage,
-        backgroundColor: primaryBlue,
-        child: const Icon(Icons.person_search, color: Colors.white),
-        tooltip: 'Tester Page Citoyen',
       ),
     );
   }
@@ -1334,11 +1327,15 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   void _performLogout() {
+    // Fermer le dialogue d'abord
+    Navigator.pop(context);
+
+    // Afficher un indicateur de chargement
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Row(
+        content: const Row(
           children: [
-            const SizedBox(
+            SizedBox(
               width: 20,
               height: 20,
               child: CircularProgressIndicator(
@@ -1346,180 +1343,40 @@ class _HomePageState extends ConsumerState<HomePage> {
                 valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
               ),
             ),
-            const SizedBox(width: 12),
-            const Expanded(child: Text('Déconnexion en cours...')),
+            SizedBox(width: 12),
+            Expanded(child: Text('Déconnexion en cours...')),
           ],
         ),
-        backgroundColor: const Color(0xFFDC2626),
+        backgroundColor: const Color(0xFF2563EB),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.all(16),
         duration: const Duration(seconds: 2),
       ),
     );
-  }
 
-  /// ================= TEST CITOYEN INFO PAGE =================
-  void _testCitizenInfoPage() {
-    _showDomainSelectionDialog();
-  }
-
-  void _showDomainSelectionDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: primaryBlue.withOpacity(0.1),
-                  shape: BoxShape.circle,
+    // Effectuer la déconnexion
+    ref
+        .read(settingsCtrlProvider.notifier)
+        .logout()
+        .then((_) {
+          print("Déconnexion réussie depuis home, redirection automatique");
+        })
+        .catchError((e) {
+          print("Erreur lors de la déconnexion: $e");
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Erreur lors de la déconnexion: $e'),
+                backgroundColor: Colors.red,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
-                  Icons.person_search,
-                  color: primaryBlue,
-                  size: 20,
-                ),
+                margin: EdgeInsets.all(16),
               ),
-              const SizedBox(width: 12),
-              const Text(
-                'Tester Page Citoyen',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: primaryDark,
-                ),
-              ),
-            ],
-          ),
-          content: const Text(
-            'Sélectionnez le domaine de l\'agent à tester :',
-            style: TextStyle(fontSize: 13, color: secondaryText),
-          ),
-          actions: [
-            _buildDomainButton(
-              'police',
-              '👮',
-              'Police',
-              const Color(0xFF1E40AF),
-            ),
-            _buildDomainButton(
-              'immigration',
-              '🛂',
-              'Immigration',
-              const Color(0xFF059669),
-            ),
-            _buildDomainButton('sante', '🏥', 'Santé', const Color(0xFFDC2626)),
-            _buildDomainButton(
-              'education',
-              '🎓',
-              'Éducation',
-              const Color(0xFF7C3AED),
-            ),
-            _buildDomainButton(
-              'justice',
-              '⚖️',
-              'Justice',
-              const Color(0xFFEA580C),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('ANNULER'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildDomainButton(
-    String domain,
-    String emoji,
-    String title,
-    Color color,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: ElevatedButton(
-        onPressed: () {
-          Navigator.pop(context);
-          _navigateToCitizenInfo(domain);
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: color.withOpacity(0.1),
-          foregroundColor: color,
-          elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-            side: BorderSide(color: color.withOpacity(0.3)),
-          ),
-        ),
-        child: Row(
-          children: [
-            Text(emoji, style: const TextStyle(fontSize: 16)),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                title,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: color,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _navigateToCitizenInfo(String domain) {
-    final testCitizenData = {
-      'prenom': 'Jean-Pierre',
-      'nom': 'MUKENDI',
-      'cni': 'CD123456789',
-      'dateNaissance': '1990-01-15',
-      'lieuNaissance': 'Kinshasa, RDC',
-      'photo': null,
-      'statut': 'Actif',
-      'telephone': '+243 123 456 789',
-      'email': 'jeanpierre.mukendi@email.com',
-      'adresse': 'Avenue des Nations, Kinshasa',
-      'commune': 'Lemba',
-      'profession': 'Développeur',
-      'employeur': 'Tech Solutions RDC',
-      'casierJudiciaire': 'Casier vide',
-      'permisConduire': 'Valide',
-      'signalements': 'Aucun signalement',
-      'statutLegal': 'Régulier',
-      'visaType': 'Touristique',
-      'visaExpiration': '2024-12-31',
-      'nationalite': 'Congolaise',
-      'residenceStatus': 'Permanent',
-      'groupeSanguin': 'O+',
-      'vaccination': 'À jour',
-      'allergies': 'Aucune connue',
-      'assurance': 'INSS',
-      'niveauEtude': 'Supérieur',
-      'diplome': 'Informatique',
-      'langues': 'Français, Lingala',
-      'certifications': 'Flutter, React',
-      'legalStatus': 'Conforme',
-      'documentsLegaux': 'Complets',
-      'affairesEnCours': 'Aucune',
-      'conformite': '100%',
-    };
-
-    context.push(
-      '/app/citizen-info',
-      extra: {'citizenData': testCitizenData, 'domain': domain},
-    );
+            );
+          }
+        });
   }
 }
