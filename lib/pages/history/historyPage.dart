@@ -45,52 +45,8 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            Container(
-              margin: const EdgeInsets.only(top: 2),
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: primaryBlue.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                '6 enregistrements',
-                style: TextStyle(
-                  color: primaryBlue,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
           ],
         ),
-        actions: [
-          Container(
-            margin: const EdgeInsets.only(right: 4),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              shape: BoxShape.circle,
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.filter_list, color: primaryDark, size: 20),
-              onPressed: () {
-                // Ouvrir le filtre
-              },
-            ),
-          ),
-          Container(
-            margin: const EdgeInsets.only(right: 12),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              shape: BoxShape.circle,
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.download, color: primaryDark, size: 20),
-              onPressed: () {
-                // Exporter l'historique
-              },
-            ),
-          ),
-        ],
       ),
       body: Column(
         children: [
