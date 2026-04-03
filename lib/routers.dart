@@ -73,6 +73,25 @@ final routerConfigProvider = Provider<GoRouter>((ref) {
     ),
 
     GoRoute(
+      path: "/app/citizen-info",
+      name: 'citizen_info_page',
+      builder: (ctx, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        final citizenData = extra?['citizenData'] as Map<String, dynamic>?;
+        final cardNumber = extra?['cardNumber'] as String? ?? '';
+        final nni = extra?['nni'] as String? ?? '';
+        final scanType = extra?['scanType'] as String? ?? 'nfc';
+
+        return CitizenInfoPage(
+          citizenData: citizenData ?? {},
+          cardNumber: cardNumber,
+          nni: nni,
+          scanType: scanType,
+        );
+      },
+    ),
+
+    GoRoute(
       path: "/app/settings",
       name: 'settings_page',
       builder: (ctx, state) {
