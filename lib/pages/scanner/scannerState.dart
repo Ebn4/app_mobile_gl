@@ -1,6 +1,6 @@
 import 'package:app_mobile/business/models/citizen/citizen.dart';
 
-enum ScannerStatus { initial, scanning, processing, success, error }
+enum ScannerStatus { initial, scanning, processing, success, navigating, error }
 
 class ScannerState {
   final ScannerStatus status;
@@ -46,6 +46,19 @@ class ScannerState {
     );
   }
 
+  factory ScannerState.navigating({
+    required String cardNumber,
+    required String nni,
+    required Citizen citizen,
+  }) {
+    return ScannerState(
+      status: ScannerStatus.navigating,
+      cardNumber: cardNumber,
+      nni: nni,
+      citizen: citizen,
+    );
+  }
+
   factory ScannerState.error(String message) {
     return ScannerState(status: ScannerStatus.error, errorMessage: message);
   }
@@ -53,6 +66,7 @@ class ScannerState {
   bool get isScanning => status == ScannerStatus.scanning;
   bool get isProcessing => status == ScannerStatus.processing;
   bool get isSuccess => status == ScannerStatus.success;
+  bool get isNavigating => status == ScannerStatus.navigating;
   bool get isError => status == ScannerStatus.error;
 
   ScannerState copyWith({

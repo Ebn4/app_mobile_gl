@@ -1,19 +1,23 @@
 import 'package:app_mobile/main.dart';
 import 'package:app_mobile/pages/intro/appCtrl.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app_mobile/business/services/nfc/nfcService.dart';
 import 'package:app_mobile/business/services/carte/carteNetworkService.dart';
 import 'package:app_mobile/business/models/citizen/citizen.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:go_router/go_router.dart';
 import 'scannerState.dart';
 
 class ScannerCtrl extends StateNotifier<ScannerState> {
   bool _isProcessing = false;
+  bool _nfcInitialized = false; // Suivre l'état d'initialisation NFC
   final Ref ref;
   late final NfcService nfcService;
   late final CarteNetworkService carteNetworkService;
 
   String? get token => ref.read(appCtrlProvider).user?.token;
+  bool get isNfcInitialized => _nfcInitialized;
 
   ScannerCtrl({required this.ref}) : super(ScannerState.initial()) {
     // Initialiser les services
@@ -30,14 +34,29 @@ class ScannerCtrl extends StateNotifier<ScannerState> {
   Future<void> _waitForNfcInitialization() async {
     print('⏳ Attente initialisation NFC...');
     int attempts = 0;
-    while (nfcService != null && !nfcService.isNfcAvailable && attempts < 20) {
-      await Future.delayed(const Duration(milliseconds: 100));
+    int maxAttempts = 50; // Augmenté de 20 à 50
+
+    while (nfcService != null &&
+        !nfcService.isNfcAvailable &&
+        attempts < maxAttempts) {
+      await Future.delayed(
+        const Duration(milliseconds: 150),
+      ); // Augmenté de 100 à 150ms
       attempts++;
+
+      if (attempts % 10 == 0) {
+        print('⏳ NFC en cours d\'initialisation... ($attempts/$maxAttempts)');
+      }
     }
+
     if (nfcService != null && nfcService.isNfcAvailable) {
-      print('✅ NFC initialisé avec succès');
+      print('✅ NFC initialisé avec succès (${attempts * 150}ms)');
+      _nfcInitialized = true; // Marquer comme initialisé
     } else {
-      print('⚠️ NFC non disponible après attente');
+      print('⚠️ NFC non disponible après ${attempts * 150}ms');
+      throw Exception(
+        'NFC non disponible. Veuillez vérifier que le NFC est activé sur votre appareil.',
+      );
     }
   }
 
@@ -54,11 +73,23 @@ class ScannerCtrl extends StateNotifier<ScannerState> {
 
     _isProcessing = true;
     print('🔍 Démarrage scan NFC');
-    state = ScannerState.scanning();
 
     try {
-      await _waitForNfcInitialization();
-      await Future.delayed(const Duration(milliseconds: 200));
+      // Vérifier si le NFC est déjà disponible
+      if (nfcService != null && nfcService.isNfcAvailable) {
+        print('✅ NFC déjà disponible, passage direct au scan');
+        state = ScannerState.scanning(); // État "Scan en cours" directement
+      } else {
+        print('⏳ NFC non disponible, initialisation nécessaire...');
+        state =
+            ScannerState.scanning(); // Même état mais message différent dans l'UI
+
+        // Attendre plus longtemps que le NFC soit vraiment prêt
+        await _waitForNfcInitialization();
+        await Future.delayed(
+          const Duration(milliseconds: 500),
+        ); // Augmenté à 500ms
+      }
 
       if (nfcService == null) {
         throw Exception('Service NFC non initialisé');
@@ -77,12 +108,22 @@ class ScannerCtrl extends StateNotifier<ScannerState> {
       print('✅ NFC prêt, attente carte...');
       print('💡 Approchez la carte NFC du dos du téléphone');
 
+      // Ajouter un petit délai supplémentaire pour que l'interface soit prête
+      await Future.delayed(const Duration(milliseconds: 300));
+
       final cardNumber = await nfcService.scanNfcCard();
 
       print('📱 Résultat scan brut: "$cardNumber"');
 
       if (cardNumber != null && cardNumber.isNotEmpty) {
         print('🎯 Carte détectée: $cardNumber');
+
+        // Changer l'état pour processing avec le numéro de carte
+        state = ScannerState.processing(cardNumber);
+
+        // Attendre 2 secondes pour l'expérience utilisateur
+        print('⏳ Attente 2 secondes pour l\'expérience utilisateur...');
+        await Future.delayed(const Duration(seconds: 1));
 
         if (!cardNumber.startsWith('CD-')) {
           print('⚠️ Format invalide: $cardNumber');
@@ -169,14 +210,15 @@ class ScannerCtrl extends StateNotifier<ScannerState> {
       );
       print('✅ [2/2] Citoyen trouvé - Nom: ${citizen.prenom} ${citizen.nom}');
 
-      // 3. Succès
-      state = ScannerState.success(
+      // 3. Succès - Passer à l'état navigating pour une transition fluide
+      state = ScannerState.navigating(
         cardNumber: cardNumber,
         nni: carteResponse.nni,
         citizen: citizen,
       );
 
       print('🎉 SCAN ET TRAITEMENT RÉUSSIS !');
+      print('🚀 Navigation vers page citoyen...');
     } catch (e) {
       print('❌ ERREUR TRAITEMENT: $e');
       print('❌ Type erreur: ${e.runtimeType}');
@@ -204,9 +246,31 @@ class ScannerCtrl extends StateNotifier<ScannerState> {
   }
 
   void reset() {
-    print('🔄 Reset scanner');
-    _isProcessing = false;
     state = ScannerState.initial();
+    _isProcessing = false;
+  }
+
+  // Méthode pour naviguer vers la page citoyen avec les données
+  void navigateToCitizenInfo(BuildContext context) {
+    if (state.isNavigating && state.citizen != null) {
+      print('🚀 Navigation effective vers page citoyen...');
+
+      // Navigation directe sans réinitialisation immédiate
+      context.push(
+        '/app/citizen-info',
+        extra: {
+          'citizenData': state.citizen?.toJson(),
+          'cardNumber': state.cardNumber,
+          'nni': state.nni,
+          'scanType': 'nfc',
+        },
+      );
+
+      // Réinitialiser après un court délai pour éviter le flash
+      Future.delayed(const Duration(milliseconds: 100), () {
+        reset();
+      });
+    }
   }
 
   void retry() {
