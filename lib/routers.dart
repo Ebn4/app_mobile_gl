@@ -1,7 +1,10 @@
 import 'package:app_mobile/pages/auth/login/loginPage.dart';
+import 'package:app_mobile/pages/auth/login/loginCtrl.dart';
 import 'package:app_mobile/pages/auth/register/registerPage.dart';
 import 'package:app_mobile/pages/changePassword/changePasswordPage.dart';
+import 'package:app_mobile/pages/citizen/citizenInfoPage.dart';
 import 'package:app_mobile/pages/history/historyPage.dart';
+import 'package:app_mobile/pages/intro/appCtrl.dart';
 import 'package:app_mobile/pages/profile/profileEditPage.dart';
 import 'package:app_mobile/pages/scanner/scannerPage.dart';
 import 'package:app_mobile/pages/settings/settingsPage.dart';
@@ -9,7 +12,6 @@ import 'package:app_mobile/pages/widgets/mainLayout.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'pages/404/not_found_page.dart';
-import 'pages/intro/appCtrl.dart';
 import 'pages/intro/introPage.dart';
 import 'utils/navigationUtils.dart';
 import './main.dart';
@@ -71,6 +73,25 @@ final routerConfigProvider = Provider<GoRouter>((ref) {
     ),
 
     GoRoute(
+      path: "/app/citizen-info",
+      name: 'citizen_info_page',
+      builder: (ctx, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        final citizenData = extra?['citizenData'] as Map<String, dynamic>?;
+        final cardNumber = extra?['cardNumber'] as String? ?? '';
+        final nni = extra?['nni'] as String? ?? '';
+        final scanType = extra?['scanType'] as String? ?? 'nfc';
+
+        return CitizenInfoPage(
+          citizenData: citizenData ?? {},
+          cardNumber: cardNumber,
+          nni: nni,
+          scanType: scanType,
+        );
+      },
+    ),
+
+    GoRoute(
       path: "/app/settings",
       name: 'settings_page',
       builder: (ctx, state) {
@@ -85,7 +106,7 @@ final routerConfigProvider = Provider<GoRouter>((ref) {
         return HistoryPage();
       },
     ),
-    
+
     GoRoute(
       path: "/app/profile/edit",
       name: 'profile_edit_page',
@@ -110,19 +131,35 @@ CONFIGURATION  DES ROUTES
     navigatorKey: navigatorKey,
     debugLogDiagnostics: true,
     initialLocation: "/public/intro",
-    redirect: (context, state) {
-      var appState = ref.watch(appCtrlProvider);
-      var user = appState.user;
+    redirect: (context, state) async {
+      final appState = ref.read(appCtrlProvider);
 
-      // redirection vers la page d'accueil si l'utilisateur est connecté
-      if (user != null && state.matchedLocation.startsWith("/public")) {
-        return "/app/home";
+      // Toujours laisser IntroPage s'afficher
+      if (state.matchedLocation == "/public/intro") {
+        return null;
       }
 
-      // redirection vers la page d'intro si l'utilisateur n'est pas connecté
-      /*if (user == null && state.matchedLocation.startsWith("/app")) {
-        return "/public/intro";
-      }*/
+      final isAuthInProgress = appState.user == null && appState.error == null;
+
+      if (isAuthInProgress) {
+        await ref.read(appCtrlProvider.notifier).getUser();
+      }
+
+      final updatedState = ref.read(appCtrlProvider);
+      final user = updatedState.user;
+
+      // Utilisateur connecté
+      if (user != null) {
+        if (state.matchedLocation.startsWith("/public/")) {
+          return "/app/home";
+        }
+        return null;
+      }
+
+      // Utilisateur non connecté
+      if (state.matchedLocation.startsWith("/app/")) {
+        return "/public/login";
+      }
 
       return null;
     },
