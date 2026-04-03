@@ -1,4 +1,7 @@
+import 'package:app_mobile/business/models/user/user.dart';
 import 'package:app_mobile/main.dart';
+import 'package:app_mobile/pages/intro/appCtrl.dart';
+import 'package:app_mobile/pages/settings/settingsCtrl.dart';
 import 'package:app_mobile/utils/navigationUtils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,6 +31,54 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   static const Color secondaryText = Color(0xFF64748B);
   static const Color backgroundColor = Color(0xFFF8FAFC);
 
+  /// Méthode de déconnexion
+  Future<void> _handleLogout() async {
+    // Afficher une confirmation
+    final confirmed = await _showLogoutConfirmation();
+
+    if (confirmed) {
+      try {
+        await ref.read(settingsCtrlProvider.notifier).logout();
+        print("Déconnexion réussie, redirection vers login");
+      } catch (e) {
+        print("Erreur lors de la déconnexion: $e");
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Erreur lors de la déconnexion: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  /// Dialogue de confirmation de déconnexion
+  Future<bool> _showLogoutConfirmation() async {
+    return await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Déconnexion'),
+            content: const Text('Êtes-vous sûr de vouloir vous déconnecter ?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Annuler'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text(
+                  'Se déconnecter',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -51,11 +102,27 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Récupérer l'utilisateur connecté
+    final appState = ref.watch(appCtrlProvider);
+    final user = appState.user;
+    
+    // Extraire les initiales pour l'avatar
+    String getInitials() {
+      if (user?.username != null && user!.username!.isNotEmpty) {
+        final parts = user.username!.split(' ');
+        if (parts.length >= 2) {
+          return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+        }
+        return parts[0][0].toUpperCase();
+      }
+      return 'U';
+    }
+    
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.white,
-        elevation: _isScrolled ? 0.5 : 0, // Ombre seulement quand on scroll
+        elevation: _isScrolled ? 0.5 : 0,
         leading: null,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -81,7 +148,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         child: Column(
           children: [
             /// ================= PROFIL =================
-            _buildProfileCard(),
+            _buildProfileCard(user, getInitials()),
 
             const SizedBox(height: 20),
 
@@ -94,25 +161,25 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   _buildInfoRow(
                     icon: Icons.email_outlined,
                     label: "Email",
-                    value: "jean.mukendi@police.cd",
+                    value: user?.email ?? "Non renseigné",
                   ),
                   const SizedBox(height: 12),
                   _buildInfoRow(
                     icon: Icons.phone_outlined,
                     label: "Téléphone",
-                    value: "+243 815 123 456",
+                    value: "Non renseigné",
                   ),
                   const SizedBox(height: 12),
                   _buildInfoRow(
                     icon: Icons.business_outlined,
                     label: "Organisation",
-                    value: "Police Nationale",
+                    value: user?.institution ?? "Non renseigné",
                   ),
                   const SizedBox(height: 12),
                   _buildInfoRow(
                     icon: Icons.work_outline,
                     label: "Rôle",
-                    value: "Responsable Police",
+                    value: user?.role ?? "Non renseigné",
                   ),
                 ],
               ),
@@ -230,7 +297,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   }
 
   /// ================= CARTE PROFIL =================
-  Widget _buildProfileCard() {
+  Widget _buildProfileCard(User? user, String initials) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -263,7 +330,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   radius: 32,
                   backgroundColor: Colors.white,
                   child: Text(
-                    "JM",
+                    initials,
                     style: TextStyle(
                       color: primaryBlue,
                       fontWeight: FontWeight.bold,
@@ -277,9 +344,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      "Jean-Pierre MUKENDI",
-                      style: TextStyle(
+                    Text(
+                      user?.username ?? "Utilisateur",
+                      style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
@@ -297,9 +364,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                             color: Colors.white.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Text(
-                            "Responsable Police",
-                            style: TextStyle(color: Colors.white, fontSize: 11),
+                          child: Text(
+                            user?.role ?? "Rôle non défini",
+                            style: const TextStyle(color: Colors.white, fontSize: 11),
                           ),
                         ),
                       ],
@@ -565,7 +632,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           ),
           padding: const EdgeInsets.symmetric(vertical: 16),
         ),
-        onPressed: () {},
+        onPressed: _handleLogout,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
