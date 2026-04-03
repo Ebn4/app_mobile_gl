@@ -1,4 +1,4 @@
-import 'dart:async';
+import 'package:app_mobile/business/models/user/authentication.dart';
 import 'package:app_mobile/main.dart';
 import 'package:app_mobile/utils/navigationUtils.dart';
 import 'package:flutter/material.dart';
@@ -18,7 +18,21 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
-  bool _isLoading = false;
+
+  // Liste des institutions
+  final List<String> _institutions = [
+    'ONIP - Office National des Impôts et Patentes',
+    'CNSS - Caisse Nationale de Sécurité Sociale',
+    'Commune - Services municipaux',
+    'DGI - Direction Générale des Impôts',
+    'DGM - Direction Générale des Douanes',
+    'Études - Services d\'études administratives',
+    'Justice - Système judiciaire',
+    'Santé - Services de santé',
+    'Transport - Services de transport',
+  ];
+
+  String? _selectedInstitution;
 
   @override
   void dispose() {
@@ -265,8 +279,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                               controller: _emailController,
                               keyboardType: TextInputType.emailAddress,
                               decoration: const InputDecoration(
-                                labelText: 'Adresse Email',
-                                hintText: 'exemple@email.com',
+                                labelText: 'Adresse email',
+                                hintText: 'exemple@domaine.com',
                                 prefixIcon: Icon(
                                   Icons.email_outlined,
                                   color: Color(0xFF0066CC),
@@ -287,12 +301,80 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                               ),
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return 'Veuillez entrer votre email';
+                                  return 'Veuillez entrer votre adresse email';
                                 }
-                                if (!RegExp(
-                                  r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-                                ).hasMatch(value)) {
-                                  return 'Veuillez entrer un email valide';
+                                // Validation basique du format email
+                                final emailRegex = RegExp(
+                                  r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$'
+                                );
+                                if (!emailRegex.hasMatch(value)) {
+                                  return 'Veuillez entrer une adresse email valide';
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          // Champ institution
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(15),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.05),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: DropdownButtonFormField<String>(
+                              value: _selectedInstitution,
+                              isExpanded:
+                                  true, // Permet au texte de prendre toute la largeur
+                              decoration: const InputDecoration(
+                                labelText: 'Institution',
+                                hintText: 'Sélectionnez votre institution',
+                                prefixIcon: Icon(
+                                  Icons.business_outlined,
+                                  color: Color(0xFF0066CC),
+                                ),
+                                border: InputBorder.none,
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 18,
+                                  vertical: 16,
+                                ),
+                                labelStyle: TextStyle(
+                                  color: Color(0xFF0066CC),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                hintStyle: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              items: _institutions.map((String institution) {
+                                return DropdownMenuItem<String>(
+                                  value: institution,
+                                  child: Text(
+                                    institution,
+                                    style: const TextStyle(fontSize: 13),
+                                    overflow: TextOverflow
+                                        .ellipsis, // Coupe le texte avec "..."
+                                    maxLines: 1,
+                                  ),
+                                );
+                              }).toList(),
+                              onChanged: (String? newValue) {
+                                setState(() {
+                                  _selectedInstitution = newValue;
+                                });
+                              },
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Veuillez sélectionner une institution';
                                 }
                                 return null;
                               },
@@ -407,7 +489,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                               ],
                             ),
                             child: ElevatedButton(
-                              onPressed: _isLoading ? null : _handleLogin,
+                              onPressed: () => _handleLogin(),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.transparent,
                                 shadowColor: Colors.transparent,
@@ -415,39 +497,49 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                   borderRadius: BorderRadius.circular(25),
                                 ),
                               ),
-                              child: _isLoading
-                                  ? const SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                              Colors.white,
-                                            ),
-                                      ),
-                                    )
-                                  : const Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          Icons.login_rounded,
-                                          color: Colors.white,
-                                          size: 20,
-                                        ),
-                                        SizedBox(width: 8),
-                                        Text(
-                                          'SE CONNECTER',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            letterSpacing: 1,
+                              child: Consumer(
+                                builder: (context, ref, child) {
+                                  final loginState = ref.watch(
+                                    loginCtrlProvider,
+                                  );
+                                  final isLoading =
+                                      loginState.isLoading ?? false;
+
+                                  return isLoading
+                                      ? const SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                                  Colors.white,
+                                                ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
+                                        )
+                                      : const Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              Icons.login_rounded,
+                                              color: Colors.white,
+                                              size: 20,
+                                            ),
+                                            SizedBox(width: 8),
+                                            Text(
+                                              'SE CONNECTER',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                                letterSpacing: 1,
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                },
+                              ),
                             ),
                           ),
 
@@ -588,34 +680,53 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   void _handleLogin() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
+    if (_formKey.currentState!.validate() && _selectedInstitution != null) {
+      final loginCtrl = ref.read(loginCtrlProvider.notifier);
 
-      try {
-        // TODO: Implémenter la logique de connexion
-        await Future.delayed(const Duration(seconds: 2)); // Simulation
+      print("Je suis dans le controller");
 
+      // Extraire le code de l'institution (ex: "ONIP" de "ONIP - Office National...")
+      final institutionCode = _selectedInstitution!.split(' - ')[0];
+
+      // Créer l'objet Authentication
+      final authData = Authentication(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+        role: 'agent',
+        institution: institutionCode,
+      );
+
+      await loginCtrl.login(authData);
+
+      // Vérifier si la connexion a réussi
+      final loginState = ref.read(loginCtrlProvider);
+
+      if (loginState.user != null) {
+        // Succès - naviguer vers la page d'accueil
         if (mounted) {
           navigation.replace('/app/home');
         }
-      } catch (e) {
+      } else if (loginState.error != null) {
+        // Erreur - afficher un message
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Erreur de connexion: $e'),
+              content: Text(loginState.error!),
               backgroundColor: const Color(0xFFCC0000),
+              duration: const Duration(seconds: 3),
             ),
           );
         }
-      } finally {
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
-        }
       }
+    } else if (_selectedInstitution == null) {
+      // Message d'erreur si aucune institution n'est sélectionnée
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Veuillez sélectionner une institution'),
+          backgroundColor: Color(0xFFCC0000),
+          duration: Duration(seconds: 2),
+        ),
+      );
     }
   }
 }
