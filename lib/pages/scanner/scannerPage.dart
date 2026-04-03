@@ -25,19 +25,10 @@ class _ScannerPageState extends ConsumerState<ScannerPage> {
     final state = ref.watch(scannerCtrlProvider);
     final controller = ref.read(scannerCtrlProvider.notifier);
 
-    // Écouter les changements d'état pour la navigation
-    if (state.isSuccess && state.citizen != null) {
+    // Écouter les changements d'état pour la navigation fluide
+    if (state.isNavigating && state.citizen != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        context.push(
-          '/app/citizen-info',
-          extra: {
-            'citizenData': state.citizen?.toJson(),
-            'cardNumber': state.cardNumber,
-            'nni': state.nni,
-            'scanType': 'nfc',
-          },
-        );
-        controller.reset(); // Réinitialiser après navigation
+        controller.navigateToCitizenInfo(context);
       });
     }
 
@@ -90,12 +81,12 @@ class _ScannerPageState extends ConsumerState<ScannerPage> {
       height: 200,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: state.isScanning
+        color: state.isScanning || state.isNavigating
             ? const Color(0xFF2563EB).withOpacity(0.1)
             : Colors.white,
         boxShadow: [
           BoxShadow(
-            color: state.isScanning
+            color: state.isScanning || state.isNavigating
                 ? const Color(0xFF2563EB).withOpacity(0.3)
                 : Colors.grey.withOpacity(0.1),
             blurRadius: 20,
@@ -106,15 +97,17 @@ class _ScannerPageState extends ConsumerState<ScannerPage> {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          if (state.isScanning)
+          if (state.isScanning || state.isNavigating)
             const CircularProgressIndicator(
               color: Color(0xFF2563EB),
               strokeWidth: 3,
             ),
           Icon(
-            state.isScanning ? Icons.nfc_rounded : Icons.nfc,
+            state.isNavigating
+                ? Icons.check_circle_rounded
+                : (state.isScanning ? Icons.nfc_rounded : Icons.nfc),
             size: 80,
-            color: state.isScanning
+            color: state.isScanning || state.isNavigating
                 ? const Color(0xFF2563EB)
                 : Colors.grey.shade400,
           ),
@@ -130,14 +123,28 @@ class _ScannerPageState extends ConsumerState<ScannerPage> {
 
     switch (state.status) {
       case ScannerStatus.scanning:
-        title = 'Scan en cours...';
-        subtitle = 'Approchez votre carte NFC du téléphone';
-        color = const Color(0xFF2563EB);
+        final controller = ref.read(scannerCtrlProvider.notifier);
+        if (controller.isNfcInitialized) {
+          title = 'Scan en cours...';
+          subtitle = 'Approchez votre carte NFC du téléphone';
+          color = const Color(0xFF2563EB);
+        } else {
+          title = 'Initialisation NFC...';
+          subtitle = 'Veuillez patienter, préparation du scan';
+          color = const Color(0xFF2563EB);
+        }
         break;
       case ScannerStatus.processing:
-        title = 'Traitement...';
-        subtitle = 'Récupération des informations';
-        color = const Color(0xFFF59E0B);
+        title = 'Carte détectée !';
+        subtitle = 'Traitement des informations...';
+        color = const Color(
+          0xFF10B981,
+        ); // Vert pour montrer que la carte est détectée
+        break;
+      case ScannerStatus.navigating:
+        title = 'Succès !';
+        subtitle = 'Navigation en cours...';
+        color = const Color(0xFF10B981);
         break;
       case ScannerStatus.success:
         title = 'Carte détectée !';
@@ -345,6 +352,31 @@ class _ScannerPageState extends ConsumerState<ScannerPage> {
               fontWeight: FontWeight.w500,
             ),
             textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: Color(0xFFFEF3C7),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Color(0xFFF59E0B).withOpacity(0.3)),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.info_outline, color: Color(0xFFF59E0B), size: 16),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'L\'initialisation NFC peut prendre quelques secondes',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF92400E),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       );
