@@ -20,7 +20,7 @@ class AppCtrl extends StateNotifier<AppState> {
   Future<void> clearUser() async {
     try {
       await userLocalService.clearUser();
-      state = state.copyWith(user: null, error: null);
+      state = AppState(user: null, isLoading: false, error: null);
     } catch (e) {
       state = state.copyWith(error: e.toString());
     }

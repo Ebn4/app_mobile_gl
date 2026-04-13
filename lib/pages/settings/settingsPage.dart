@@ -38,8 +38,12 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
     if (confirmed) {
       try {
+
+
         await ref.read(settingsCtrlProvider.notifier).logout();
         print("Déconnexion réussie, redirection vers login");
+
+        // La redirection sera gérée automatiquement par le listener dans MyApplication
       } catch (e) {
         print("Erreur lors de la déconnexion: $e");
         if (mounted) {
@@ -105,7 +109,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     // Récupérer l'utilisateur connecté
     final appState = ref.watch(appCtrlProvider);
     final user = appState.user;
-    
+
     // Extraire les initiales pour l'avatar
     String getInitials() {
       if (user?.username != null && user!.username!.isNotEmpty) {
@@ -117,7 +121,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       }
       return 'U';
     }
-    
+
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
@@ -187,40 +191,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
             const SizedBox(height: 20),
 
-            /// ================= NOTIFICATIONS =================
-            _buildSectionCard(
-              title: "Notifications",
-              icon: Icons.notifications_none,
-              child: Column(
-                children: [
-                  _buildSwitchTile(
-                    icon: Icons.notifications_active_outlined,
-                    title: "Notifications push",
-                    subtitle: "Recevoir des alertes sur l'appareil",
-                    value: pushNotif,
-                    onChanged: (v) => setState(() => pushNotif = v),
-                  ),
-                  const SizedBox(height: 8),
-                  _buildSwitchTile(
-                    icon: Icons.email_outlined,
-                    title: "Notifications email",
-                    subtitle: "Recevoir des alertes par email",
-                    value: emailNotif,
-                    onChanged: (v) => setState(() => emailNotif = v),
-                  ),
-                  const SizedBox(height: 8),
-                  _buildSwitchTile(
-                    icon: Icons.sms_outlined,
-                    title: "Notifications SMS",
-                    subtitle: "Recevoir des alertes par SMS",
-                    value: smsNotif,
-                    onChanged: (v) => setState(() => smsNotif = v),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 20),
 
             /// ================= SÉCURITÉ =================
             _buildSectionCard(
@@ -366,7 +336,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                           ),
                           child: Text(
                             user?.role ?? "Rôle non défini",
-                            style: const TextStyle(color: Colors.white, fontSize: 11),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                            ),
                           ),
                         ),
                       ],
