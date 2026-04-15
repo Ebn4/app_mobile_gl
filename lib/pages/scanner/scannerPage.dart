@@ -1,4 +1,3 @@
-// lib/pages/scanner/scannerPage.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -16,8 +15,6 @@ class _ScannerPageState extends ConsumerState<ScannerPage> {
   @override
   void initState() {
     super.initState();
-    // Ne plus démarrer le scan automatiquement
-    // L'utilisateur devra cliquer sur le bouton "Scanner la carte"
   }
 
   @override

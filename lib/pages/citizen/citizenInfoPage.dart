@@ -2,6 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../main.dart';
 import '../../pages/intro/appCtrl.dart';
+import '../../pages/citizen/citizenInfoCtrl.dart';
+import '../../pages/citizen/citizenInfoState.dart';
+import '../../business/models/institution/transportModel.dart';
+import '../../business/models/institution/justiceModel.dart';
+import '../../business/models/institution/etudeModel.dart';
+import '../../business/models/institution/onipModel.dart';
+import '../../business/models/institution/cnssModel.dart';
+import '../../business/models/institution/communeModel.dart';
 
 class CitizenInfoPage extends ConsumerWidget {
   final Map<String, dynamic> citizenData;
@@ -176,6 +184,7 @@ class CitizenInfoPage extends ConsumerWidget {
     final user = ref.watch(appCtrlProvider.select((state) => state.user));
     final currentInstitution = user?.institution ?? institutions.first;
     final relevantFields = _getRelevantFields(currentInstitution);
+    final citizenInfoState = ref.watch(citizenInfoCtrlProvider);
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -231,6 +240,10 @@ class CitizenInfoPage extends ConsumerWidget {
                 _buildInfoCard(relevantFields),
                 const SizedBox(height: 16),
 
+                // Informations institutionnelles
+                _buildInstitutionalInfo(currentInstitution, citizenInfoState),
+                const SizedBox(height: 16),
+
                 // Boutons d'action
                 _buildActionButtons(context),
                 const SizedBox(height: 32),
@@ -240,6 +253,318 @@ class CitizenInfoPage extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildInstitutionalInfo(
+    String agentInstitution,
+    dynamic citizenInfoState,
+  ) {
+    if (citizenInfoState is! CitizenInfoState) {
+      return const SizedBox.shrink();
+    }
+
+    final state = citizenInfoState as CitizenInfoState;
+
+    if (state.isLoading) {
+      return _buildSectionCard(
+        'Chargement...',
+        Icons.hourglass_empty,
+        primaryBlue,
+        [
+          Container(
+            height: 60,
+            alignment: Alignment.center,
+            child: const CircularProgressIndicator(color: primaryBlue),
+          ),
+        ],
+      );
+    }
+
+    if (state.error != null) {
+      return _buildSectionCard('Erreur', Icons.error, redAccent, [
+        Text(
+          state.error!,
+          style: const TextStyle(fontSize: 14, color: redAccent),
+        ),
+      ]);
+    }
+
+    // Afficher les informations selon l'institution
+    switch (agentInstitution.toLowerCase()) {
+      case 'transport':
+        if (state.transportInfo != null) {
+          final transport = state.transportInfo!;
+          return _buildSectionCard(
+            'Informations de Transport',
+            Icons.directions_car,
+            primaryBlue,
+            [
+              Text(
+                'Numéro de permis: ${transport.numero_permis}',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: primaryDark,
+                ),
+              ),
+              Text(
+                'Date de délivrance: ${transport.date_delivrance}',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: primaryDark,
+                ),
+              ),
+              Text(
+                'Lieu de délivrance: ${transport.lieu_delivrance}',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: primaryDark,
+                ),
+              ),
+              Text(
+                'Catégorie: ${transport.id_categorie}',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: primaryDark,
+                ),
+              ),
+              Text(
+                'Date d\'expiration: ${transport.date_expiration}',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: primaryDark,
+                ),
+              ),
+              Text(
+                'Statut: ${transport.statut}',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: primaryDark,
+                ),
+              ),
+            ],
+          );
+        }
+        break;
+
+      case 'justice':
+        if (state.justiceInfo != null) {
+          final justice = state.justiceInfo!;
+          return _buildSectionCard(
+            'Informations Judiciaires',
+            Icons.gavel,
+            purpleAccent,
+            [
+              if (justice.casiers.isEmpty)
+                const Text(
+                  'Aucun casier judiciaire',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: primaryDark,
+                  ),
+                )
+              else
+                ...justice.casiers.map(
+                  (casier) => Text(
+                    'Casier: ${casier.numero_casier ?? ''} - ${casier.nature_infraction ?? ''}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: primaryDark,
+                    ),
+                  ),
+                ),
+            ],
+          );
+        }
+        break;
+
+      case 'etude':
+        if (state.etudeInfo != null) {
+          final etude = state.etudeInfo!;
+          return _buildSectionCard(
+            'Informations Étudiantes',
+            Icons.school,
+            warningOrange,
+            [
+              if (etude.cartes.isEmpty)
+                const Text(
+                  'Aucune carte trouvée',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: primaryDark,
+                  ),
+                )
+              else
+                ...etude.cartes.map(
+                  (carte) => Text(
+                    'Carte: ${carte.numero_carte ?? ''} - ${carte.etablissement ?? ''}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: primaryDark,
+                    ),
+                  ),
+                ),
+            ],
+          );
+        }
+        break;
+
+      case 'onip':
+        if (state.onipInfo != null) {
+          final onip = state.onipInfo!;
+          return Column(
+            children: [
+              if (onip.adresse != null)
+                _buildSectionCard('Adresse', Icons.location_on, primaryBlue, [
+                  Text(
+                    'Province: ${onip.adresse!.province ?? ''}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: primaryDark,
+                    ),
+                  ),
+                  Text(
+                    'Ville: ${onip.adresse!.ville ?? ''}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: primaryDark,
+                    ),
+                  ),
+                  Text(
+                    'Commune: ${onip.adresse!.commune ?? ''}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: primaryDark,
+                    ),
+                  ),
+                ]),
+              const SizedBox(height: 16),
+              if (onip.photo_passeport != null)
+                _buildSectionCard(
+                  'Photo Passeport',
+                  Icons.photo_camera,
+                  successGreen,
+                  [
+                    if (onip.photo_passeport!.url_photo != null)
+                      Text(
+                        'URL: ${onip.photo_passeport!.url_photo ?? ''}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: primaryDark,
+                        ),
+                      ),
+                  ],
+                ),
+            ],
+          );
+        }
+        break;
+
+      case 'cnss':
+        if (state.cnssInfo != null) {
+          final cnss = state.cnssInfo!;
+          return _buildSectionCard(
+            'Informations CNSS',
+            Icons.security,
+            primaryBlue,
+            [
+              if (cnss.numero_assure != null)
+                Text(
+                  'Numéro d\'assuré: ${cnss.numero_assure ?? ''}',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: primaryDark,
+                  ),
+                ),
+              if (cnss.date_affiliation != null)
+                Text(
+                  'Date d\'affiliation: ${cnss.date_affiliation ?? ''}',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: primaryDark,
+                  ),
+                ),
+              if (cnss.statut_cotisation != null)
+                Text(
+                  'Statut de cotisation: ${cnss.statut_cotisation ?? ''}',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: primaryDark,
+                  ),
+                ),
+            ],
+          );
+        }
+        break;
+
+      case 'commune':
+        if (state.communeInfo != null) {
+          final commune = state.communeInfo!;
+          return _buildSectionCard(
+            'Acte de Naissance',
+            Icons.description,
+            purpleAccent,
+            [
+              if (commune.acte_naissance != null) ...[
+                if (commune.acte_naissance!.numero_acte != null)
+                  Text(
+                    'Numéro d\'acte: ${commune.acte_naissance!.numero_acte ?? ''}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: primaryDark,
+                    ),
+                  ),
+                if (commune.acte_naissance!.date_naissance != null)
+                  Text(
+                    'Date de naissance: ${commune.acte_naissance!.date_naissance ?? ''}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: primaryDark,
+                    ),
+                  ),
+                if (commune.acte_naissance!.lieu_naissance != null)
+                  Text(
+                    'Lieu de naissance: ${commune.acte_naissance!.lieu_naissance ?? ''}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: primaryDark,
+                    ),
+                  ),
+              ] else
+                const Text(
+                  'Aucun acte trouvé',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: primaryDark,
+                  ),
+                ),
+            ],
+          );
+        }
+        break;
+    }
+
+    return const SizedBox.shrink();
   }
 
   Widget _buildHeader(String institution) {
@@ -395,6 +720,58 @@ class CitizenInfoPage extends ConsumerWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSectionCard(
+    String title,
+    IconData icon,
+    Color color,
+    List<Widget> children,
+  ) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(icon, color: color, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: primaryDark,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            ...children,
+          ],
+        ),
       ),
     );
   }

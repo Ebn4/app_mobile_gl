@@ -169,12 +169,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   ),
                   const SizedBox(height: 12),
                   _buildInfoRow(
-                    icon: Icons.phone_outlined,
-                    label: "Téléphone",
-                    value: "Non renseigné",
-                  ),
-                  const SizedBox(height: 12),
-                  _buildInfoRow(
                     icon: Icons.business_outlined,
                     label: "Organisation",
                     value: user?.institution ?? "Non renseigné",
