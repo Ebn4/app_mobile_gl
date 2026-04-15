@@ -1,9 +1,11 @@
 import 'package:app_mobile/business/services/carte/carteNetworkService.dart';
+import 'package:app_mobile/business/services/institution/institutionService.dart';
 import 'package:app_mobile/business/services/nfc/nfcService.dart';
 import 'package:app_mobile/business/services/user/userLocalService.dart';
 import 'package:app_mobile/business/services/user/userNetworkService.dart';
 import 'package:app_mobile/framework/carte/carteNetworkServiceImpl.dart';
 import 'package:app_mobile/framework/nfc/nfcServiceImpl.dart';
+import 'package:app_mobile/framework/institution/institutionServiceImpl.dart';
 import 'package:app_mobile/framework/user/userLocalServiceImpl.dart';
 import 'package:app_mobile/framework/user/userNetworkServiceImpl.dart';
 import 'package:app_mobile/framework/utils/http/remoteHttpUtils.dart';
@@ -32,6 +34,9 @@ void configureImplementations() {
   );
   getIt.registerLazySingleton<CarteNetworkService>(
     () => CarteNetworkServiceImpl(baseUrl: baseUrl, httpUtils: httpUtils),
+  );
+  getIt.registerLazySingleton<InstitutionService>(
+    () => InstitutionServiceImpl(baseUrl: baseUrl, httpUtils: httpUtils),
   );
   getIt.registerLazySingleton<NfcService>(() => NfcServiceImpl());
 }
