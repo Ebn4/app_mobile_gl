@@ -4,10 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app_mobile/business/services/nfc/nfcService.dart';
 import 'package:app_mobile/business/services/carte/carteNetworkService.dart';
+import 'package:app_mobile/business/models/user/user.dart';
 import 'package:app_mobile/business/models/citizen/citizen.dart';
+import 'package:app_mobile/business/services/user/userLocalService.dart';
+import 'package:app_mobile/pages/citizen/citizenInfoCtrl.dart';
+import 'package:app_mobile/pages/scanner/scannerState.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
-import 'scannerState.dart';
 
 class ScannerCtrl extends StateNotifier<ScannerState> {
   bool _isProcessing = false;
@@ -216,6 +219,22 @@ class ScannerCtrl extends StateNotifier<ScannerState> {
         nni: carteResponse.nni,
         citizen: citizen,
       );
+      print('✅ [3/3] Navigation vers page citoyen...');
+
+      // 4. Charger les informations institutionnelles selon l'institution de l'agent
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final appState = ref.read(appCtrlProvider);
+        final agentInstitution = appState.user?.institution ?? '';
+
+        if (agentInstitution.isNotEmpty) {
+          print(
+            '🏛 [4/4] Chargement infos institutionnelles pour: $agentInstitution',
+          );
+          ref
+              .read(citizenInfoCtrlProvider.notifier)
+              .loadCitizenInfo(citizen, agentInstitution, carteResponse.nni);
+        }
+      });
 
       print('🎉 SCAN ET TRAITEMENT RÉUSSIS !');
       print('🚀 Navigation vers page citoyen...');
